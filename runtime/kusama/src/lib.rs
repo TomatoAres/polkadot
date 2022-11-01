@@ -31,6 +31,7 @@ use primitives::v2::{
 };
 use runtime_common::{
 	auctions, claims, crowdloan, impl_runtime_weights, impls::DealWithFees, paras_registrar,
+    paras_sudo_wrapper,
 	prod_or_fast, slots, BalanceToU256, BlockHashCount, BlockLength, CurrencyToVote,
 	SlowAdjustingFeeUpdate, U256ToBalance,
 };
@@ -1195,6 +1196,9 @@ impl paras_registrar::Config for Runtime {
 	type WeightInfo = weights::runtime_common_paras_registrar::WeightInfo<Runtime>;
 }
 
+
+impl paras_sudo_wrapper::Config for Runtime {}
+
 parameter_types! {
 	// 6 weeks
 	pub LeasePeriod: BlockNumber = prod_or_fast!(6 * WEEKS, 6 * WEEKS, "KSM_LEASE_PERIOD");
@@ -1413,10 +1417,18 @@ construct_runtime! {
 		Slots: slots::{Pallet, Call, Storage, Event<T>} = 71,
 		Auctions: auctions::{Pallet, Call, Storage, Event<T>} = 72,
 		Crowdloan: crowdloan::{Pallet, Call, Storage, Event<T>} = 73,
+        ParasSudoWrapper: paras_sudo_wrapper::{Pallet, Call} = 74,
 
 		// Pallet for sending XCM.
 		XcmPallet: pallet_xcm::{Pallet, Call, Storage, Event<T>, Origin, Config} = 99,
+
+        Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 255,
 	}
+}
+
+impl pallet_sudo::Config for Runtime {
+	type Event = Event;
+	type Call = Call;
 }
 
 /// The address format for describing accounts.
